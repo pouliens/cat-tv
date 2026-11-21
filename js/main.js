@@ -36,6 +36,8 @@ const btnFs = document.getElementById('btn-fullscreen');
 const btnSettings = document.getElementById('btn-settings');
 const btnClose = document.getElementById('btn-close-settings');
 
+const revealControls = document.getElementById('reveal-controls');
+let touchScreen = navigator.maxTouchPoints > 0;
 const engine = new Engine(canvas);
 const audioPrompt = document.getElementById('enable-audio');
 const audio = new AudioEngine(syncAudioState);
@@ -233,6 +235,7 @@ function showChrome({ panel = false } = {}) {
   if (qs.hideui) return;
   chromeEl.inert = false;
   chromeEl.classList.remove('is-hidden');
+  revealControls.hidden = true;
   document.body.classList.add('cursor-on');
   syncAudioPrompt();
   if (panel) openSettings();
@@ -246,6 +249,7 @@ function hideChrome() {
   chromeEl.inert = true;
   chromeEl.classList.add('is-hidden');
   document.body.classList.remove('cursor-on');
+  revealControls.hidden = !playing || !touchScreen || qs.hideui;
   syncAudioPrompt();
 }
 
@@ -420,6 +424,7 @@ function showGuide() {
   closeSettings();
   chromeEl.inert = true;
   chromeEl.classList.add('is-hidden');
+  revealControls.hidden = true;
   canvas.hidden = true;
   startScreen.hidden = false;
   if (!guideBuilt) {
@@ -436,24 +441,28 @@ document.getElementById('btn-guide').addEventListener('click', showGuide);
 document.getElementById('guide-sound').addEventListener('click', () => setMuted(!settings.muted));
 
 document.addEventListener('pointermove', (event) => {
-  if (playing && event.pointerType !== 'touch') showChrome();
+  if (playing && event.pointerType === 'mouse' && !revealControls.contains(event.target)) showChrome();
 });
 
-document.addEventListener('pointerdown', (e) => {
-  if (!playing || qs.hideui) return;
-  if (audioPrompt.contains(e.target)) return;
-  if (chromeEl.contains(e.target)) {
-    bumpIdle();
-    return;
-  }
-  if (settingsOpen()) {
-    closeSettings();
-    bumpIdle();
-  } else if (chromeVisible()) {
-    hideChrome();
-  } else {
-    showChrome({ panel: false });
-  }
+revealControls.addEventListener('click', () => {
+  showChrome();
+  btnSettings.focus({ preventScroll: true });
+});
+
+canvas.addEventListener('contextmenu', event => event.preventDefault());
+canvas.addEventListener('pointerdown', (event) => {
+  if (!playing || event.button !== 0) return;
+  event.preventDefault();
+  if (event.pointerType === 'touch' || event.pointerType === 'pen') touchScreen = true;
+  canvas.focus({ preventScroll: true });
+  hideChrome();
+  engine.tap(event.clientX, event.clientY);
+  audio.cue();
+});
+
+// Touch browsers grant audio activation on release.
+canvas.addEventListener('pointerup', (event) => {
+  if (event.button === 0 && needsAudioGesture()) enableAudio();
 });
 
 // Move focus across the visible grid for remotes that only send directional keys.

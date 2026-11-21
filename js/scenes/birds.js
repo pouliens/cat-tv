@@ -1,4 +1,4 @@
-import { choice, rand, randInt, TAU } from '../utils.js';
+import { nearestTo, choice, rand, randInt, TAU } from '../utils.js';
 
 const BIRD_COLORS = [
   { body: '#5b3a29', wing: '#3a2418', belly: '#d8b896', beak: '#e09a2d' },
@@ -126,6 +126,14 @@ export class BirdsScene {
     b.vy = 0;
     b.wait = rand(2, 6);
     b.hopT = 0;
+  }
+
+  tap(x, y) {
+    const bird = nearestTo(this.birds, x, y);
+    this._takeoff(bird);
+    bird.heading = bird.x >= x ? 1 : -1;
+    bird.vx = bird.heading * 190;
+    bird.vy = -100;
   }
 
   update(dt) {

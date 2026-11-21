@@ -1,4 +1,4 @@
-import { choice, lerp, rand, randInt, TAU } from '../utils.js';
+import { nearestTo, choice, lerp, rand, randInt, TAU } from '../utils.js';
 
 const FISH_PALETTES = [
   { body: '#f28c28', belly: '#ffd89a', fin: '#d4550a', stripe: '#fff4d6' },
@@ -88,6 +88,20 @@ export class AquariumScene {
       vy: rand(18, 46),
       phase: rand(0, TAU),
     });
+  }
+
+  tap(x, y) {
+    const fish = nearestTo(this.fish, x, y);
+    fish.dir = fish.x >= x ? 1 : -1;
+    fish.baseSpeed = Math.abs(fish.baseSpeed) * fish.dir;
+    fish.speed = fish.baseSpeed * 4;
+    fish.dart = .6;
+    fish.dartCd = 3;
+    // A small cluster marks the contact even when the fish are far away.
+    for (let i = 0; i < 3; i++) {
+      this.bubbles.push({ x: x + rand(-9, 9), y, r: rand(3, 7), vy: rand(40, 65), phase: rand(0, TAU) });
+    }
+    if (this.bubbles.length > 100) this.bubbles.splice(0, this.bubbles.length - 100);
   }
 
   update(dt) {

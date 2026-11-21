@@ -35,9 +35,43 @@ export class Engine {
 
   setScene(scene) {
     this.scene?.stop?.();
+    this.contact = null;
     this.scene = scene;
     scene?.resize?.(this.cssW, this.cssH);
     scene?.start?.();
+  }
+
+  tap(clientX, clientY) {
+    if (!this.running || !this.scene) return;
+    const box = this.canvas.getBoundingClientRect();
+    if (!box.width || !box.height) return;
+    const x = (clientX - box.left) * this.cssW / box.width;
+    const y = (clientY - box.top) * this.cssH / box.height;
+    this.contact = { x, y, age: 0 };
+    this.scene.tap?.(x, y);
+  }
+
+  drawContact(dt) {
+    const contact = this.contact;
+    if (!contact) return;
+    contact.age += dt;
+    const progress = contact.age / .42;
+    if (progress >= 1) {
+      this.contact = null;
+      return;
+    }
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = .7 * (1 - progress);
+    ctx.beginPath();
+    ctx.arc(contact.x, contact.y, 8 + 26 * progress, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 0, 0, .45)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
   }
 
   start() {
@@ -52,6 +86,7 @@ export class Engine {
       const { ctx } = this;
       this.scene?.update?.(dt);
       this.scene?.draw?.(ctx);
+      this.drawContact(dt);
       this.onFrame?.(dt);
       this.raf = requestAnimationFrame(loop);
     };

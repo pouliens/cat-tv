@@ -57,13 +57,23 @@ export class WandScene {
     else { this.mode = 'yank'; this.wait = rand(0.5, 1.1); }
   }
 
+  tap(x, y) {
+    this.target = { x, y: y - this.rest * (this.n - 1) };
+    this.mode = 'reach';
+    this.wait = .85;
+  }
+
   update(dt) {
     this.t += dt;
     this.wait -= dt;
     const { w, h } = this;
     let hx = this.hand.x;
     let hy = this.hand.y;
-    if (this.mode === 'sweep') {
+    if (this.mode === 'reach') {
+      const follow = 1 - Math.exp(-12 * dt);
+      hx += (this.target.x - hx) * follow;
+      hy += (this.target.y - hy) * follow;
+    } else if (this.mode === 'sweep') {
       hx = w * 0.5 + Math.sin(this.t * 1.2) * w * 0.32;
       hy = h * 0.18 + Math.sin(this.t * 0.6) * h * 0.08;
     } else if (this.mode === 'figure8') {

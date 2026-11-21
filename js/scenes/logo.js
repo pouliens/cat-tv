@@ -74,6 +74,16 @@ export class LogoScene {
     }
   }
 
+  tap(x, y) {
+    this._hitColor();
+    const dx = this.x + this.logoW / 2 - x;
+    const dy = this.y + this.logoH / 2 - y;
+    const angle = dx || dy ? Math.atan2(dy, dx) : Math.PI / 4;
+    const speed = Math.max(145, Math.min(this.w, this.h) * .32);
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+  }
+
   update(dt) {
     this.t += dt;
     this.x += this.vx * dt;

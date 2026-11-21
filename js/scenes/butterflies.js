@@ -1,4 +1,4 @@
-import { choice, rand, TAU } from '../utils.js';
+import { nearestTo, choice, rand, TAU } from '../utils.js';
 
 const WING_COLORS = [
   ['#ff7a18', '#ffd166', '#7a2200'],
@@ -80,6 +80,15 @@ export class ButterfliesScene {
       wait: rand(0.5, 3),
       flower: null,
     };
+  }
+
+  tap(x, y) {
+    const butterfly = nearestTo(this.bugs, x, y);
+    butterfly.state = 'fly';
+    butterfly.flower = null;
+    butterfly.wait = 2;
+    butterfly.a = Math.atan2(-Math.max(35, Math.abs(butterfly.y - y)), butterfly.x - x);
+    butterfly.turn = 0;
   }
 
   update(dt) {

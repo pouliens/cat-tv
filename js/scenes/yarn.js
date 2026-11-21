@@ -41,6 +41,17 @@ export class YarnScene {
 
   stop() {}
 
+  tap(x, y) {
+    // A direct swat bats the ball away. A tap on the rug sends it rolling that way.
+    const dx = x - this.x;
+    const dy = y - this.y;
+    const angle = dx || dy ? Math.atan2(dy, dx) : Math.PI / 4;
+    const speed = Math.hypot(dx, dy) <= this.r * 1.4 ? -220 : 220;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+    this.unravel = 1;
+  }
+
   update(dt) {
     this.t += dt;
     const speed = Math.hypot(this.vx, this.vy);
