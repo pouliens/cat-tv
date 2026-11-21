@@ -157,7 +157,7 @@ export class LogoScene {
     this._roundRect(ctx, x + 6, y + 6, lw - 12, lh - 12, Math.max(4, r - 3));
     ctx.fill();
     ctx.fillStyle = this.color;
-    ctx.font = `800 ${Math.floor(lh * 0.42)}px Outfit, Nunito, system-ui, sans-serif`;
+    ctx.font = `800 ${Math.floor(lh * 0.42)}px ui-sans-serif, system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('CAT TV', x + lw / 2, y + lh / 2 + 1);

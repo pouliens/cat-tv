@@ -130,7 +130,7 @@ export class IntroScene {
       ctx.save();
       ctx.globalAlpha = fade * Math.min(1, (ribbon - 0.85) / 0.15);
       ctx.fillStyle = '#f2f2f2';
-      ctx.font = `700 ${Math.floor(size * 0.14)}px Outfit, Nunito, system-ui, sans-serif`;
+      ctx.font = `700 ${Math.floor(size * 0.14)}px ui-sans-serif, system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.letterSpacing = '0.28em';

@@ -25,7 +25,7 @@ Settings are stored in `localStorage` on that device: which scenes are in the pl
 
 ## Scenes
 
-All art is original. All sounds are synthesized in the browser with the Web Audio API — there are no audio files and no trademarked logos.
+All art is original. The interface uses inline SVG icons and a system font stack, so it does not depend on icon fonts or Google Fonts. All sounds are synthesized in the browser with the Web Audio API — there are no audio files and no trademarked logos.
 
 1. **Aquarium** — fish of mixed sizes and colours, rising bubbles, swaying seaweed, and the occasional dart.
 2. **Bouncing Logo** — a typographic “CAT TV” badge bounces off the edges, changes colour on each hit, and celebrates a corner strike.

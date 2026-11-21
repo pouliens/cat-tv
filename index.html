@@ -11,75 +11,140 @@
   <title>CAT TV — Entertainment for cats</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <canvas id="stage" aria-hidden="true"></canvas>
 
-  <div id="start-screen" class="overlay start-screen">
+  <div id="start-screen" class="start-screen">
     <div class="start-card">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="56" height="56">
+          <rect width="64" height="64" rx="16" fill="#171c2c"/>
+          <path d="M18 28c0-10 6-16 8-16 2 0 4 6 6 10 2-4 4-10 6-10 2 0 8 6 8 16 0 12-8 20-14 20s-14-8-14-20z" fill="#f3efe6"/>
+          <circle cx="26" cy="34" r="4.2" fill="#0b1020"/>
+          <circle cx="38" cy="34" r="4.2" fill="#0b1020"/>
+          <circle cx="27.2" cy="33" r="1.4" fill="#fff"/>
+          <circle cx="39.2" cy="33" r="1.4" fill="#fff"/>
+          <path d="M32 38.5l2.2 2.2-2.2 1.3-2.2-1.3z" fill="#ff5a36"/>
+        </svg>
+      </div>
       <p class="eyebrow">For very important cats</p>
       <h1 class="wordmark">CAT TV</h1>
-      <p class="tagline">Aquariums, bouncing logos, birdsong, laser dots, and more — built to play fullscreen on a TV, tablet, or phone.</p>
-      <button id="start-btn" class="start-btn" type="button">Start</button>
-      <p class="hint">Tap or move the pointer later to show settings. Arrow keys skip scenes; Enter opens settings.</p>
+      <p class="tagline">Motion scenes to watch on a TV, tablet, or phone — aquariums, birds, laser dots, and more.</p>
+      <button id="start-btn" class="start-btn" type="button">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path fill="currentColor" d="M8.2 5.6a1 1 0 0 1 1.05.08l9 6.2a1 1 0 0 1 0 1.64l-9 6.2A1 1 0 0 1 7.5 19V6.6a1 1 0 0 1 .7-1z"/>
+        </svg>
+        <span>Start</span>
+      </button>
+      <p class="hint">Tap or move the pointer for controls. Arrow keys skip scenes · Enter opens settings</p>
     </div>
   </div>
 
   <div id="scene-toast" class="scene-toast" hidden></div>
 
-  <aside id="settings" class="settings hidden" role="dialog" aria-label="CAT TV settings" aria-hidden="true">
-    <div class="settings-inner">
-      <header class="settings-head">
-        <div>
-          <p class="settings-kicker">Now playing</p>
-          <h2 id="now-playing">CAT TV</h2>
+  <div id="chrome" class="chrome is-hidden">
+    <header class="topbar" role="toolbar" aria-label="Playback controls">
+      <div class="topbar-inner">
+        <div class="cluster">
+          <button type="button" id="btn-prev" class="icon-btn" aria-label="Previous scene" data-tip="Previous">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M16.7 5.3a1 1 0 0 1 0 1.4L11.4 12l5.3 5.3a1 1 0 1 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0z"/>
+              <path fill="currentColor" d="M7 5.25a.75.75 0 0 1 .75.75v12a.75.75 0 0 1-1.5 0V6A.75.75 0 0 1 7 5.25z"/>
+            </svg>
+          </button>
+          <button type="button" id="btn-next" class="icon-btn" aria-label="Next scene" data-tip="Next">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M7.3 5.3a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4L12.6 12 7.3 6.7a1 1 0 0 1 0-1.4z"/>
+              <path fill="currentColor" d="M17 5.25a.75.75 0 0 1 .75.75v12a.75.75 0 0 1-1.5 0V6A.75.75 0 0 1 17 5.25z"/>
+            </svg>
+          </button>
         </div>
-        <div class="icon-row">
-          <button type="button" id="btn-prev" class="icon-btn" title="Previous scene" aria-label="Previous scene">&#x23F4;</button>
-          <button type="button" id="btn-next" class="icon-btn" title="Next scene" aria-label="Next scene">&#x23F5;</button>
-          <button type="button" id="btn-fullscreen" class="icon-btn" title="Fullscreen" aria-label="Toggle fullscreen">&#x26F6;</button>
-          <button type="button" id="btn-close-settings" class="icon-btn" title="Hide settings" aria-label="Hide settings">&#x2715;</button>
+
+        <div class="now">
+          <div class="now-text">
+            <span class="now-kicker">Now playing</span>
+            <strong id="now-playing">CAT TV</strong>
+          </div>
+          <div class="progress-wrap" title="Time in this scene">
+            <div id="progress" class="progress"></div>
+          </div>
         </div>
-      </header>
 
-      <section class="settings-block">
-        <h3>Playlist</h3>
-        <div id="scene-toggles" class="chip-row"></div>
-      </section>
-
-      <section class="settings-block">
-        <h3>Scene length</h3>
-        <div id="duration-presets" class="chip-row"></div>
-        <label class="custom-duration" id="custom-duration-wrap" hidden>
-          Custom
-          <input id="custom-duration" type="number" min="5" max="7200" step="5" inputmode="numeric" />
-          <span>seconds</span>
-        </label>
-      </section>
-
-      <section class="settings-row">
-        <label class="toggle">
-          <input id="shuffle" type="checkbox" />
-          <span>Shuffle</span>
-        </label>
-        <label class="toggle">
-          <input id="sound" type="checkbox" checked />
-          <span>Sound</span>
-        </label>
-        <label class="volume">
-          <span>Volume</span>
-          <input id="volume" type="range" min="0" max="100" value="55" />
-        </label>
-        <div class="progress-wrap" title="Time left in this scene">
-          <div id="progress" class="progress"></div>
+        <div class="cluster">
+          <button type="button" id="btn-mute" class="icon-btn" aria-label="Mute sound" data-tip="Mute" aria-pressed="false">
+            <svg class="ico-on" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M4.5 9.5h3.2L12 6.2a.8.8 0 0 1 1.3.6v10.4a.8.8 0 0 1-1.3.6L7.7 14.5H4.5A1.5 1.5 0 0 1 3 13v-2a1.5 1.5 0 0 1 1.5-1.5z"/>
+              <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M16.2 9.2a4 4 0 0 1 0 5.6M18.5 7a7 7 0 0 1 0 10"/>
+            </svg>
+            <svg class="ico-off" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M4.5 9.5h3.2L12 6.2a.8.8 0 0 1 1.3.6v10.4a.8.8 0 0 1-1.3.6L7.7 14.5H4.5A1.5 1.5 0 0 1 3 13v-2a1.5 1.5 0 0 1 1.5-1.5z"/>
+              <path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M16.2 9.8 20 16.2M20 9.8l-3.8 6.4"/>
+            </svg>
+          </button>
+          <button type="button" id="btn-fullscreen" class="icon-btn" aria-label="Enter fullscreen" data-tip="Fullscreen" aria-pressed="false">
+            <svg class="ico-on" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 5H5v3M16 5h3v3M8 19H5v-3M16 19h3v-3"/>
+            </svg>
+            <svg class="ico-off" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 8H6v3M15 8h3v3M9 16H6v-3M15 16h3v-3"/>
+            </svg>
+          </button>
+          <button type="button" id="btn-settings" class="icon-btn" aria-label="Open settings" data-tip="Settings" aria-expanded="false" aria-controls="settings">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M11.1 3.5h1.8l.3 2.1a6.7 6.7 0 0 1 1.7.7l1.9-1 1.3 1.3-1 1.9c.3.5.5 1.1.7 1.7l2.1.3v1.8l-2.1.3a6.7 6.7 0 0 1-.7 1.7l1 1.9-1.3 1.3-1.9-1a6.7 6.7 0 0 1-1.7.7l-.3 2.1h-1.8l-.3-2.1a6.7 6.7 0 0 1-1.7-.7l-1.9 1-1.3-1.3 1-1.9a6.7 6.7 0 0 1-.7-1.7l-2.1-.3v-1.8l2.1-.3c.2-.6.4-1.2.7-1.7l-1-1.9 1.3-1.3 1.9 1c.5-.3 1.1-.5 1.7-.7l.3-2.1zM12 9.2A2.8 2.8 0 1 0 12 14.8 2.8 2.8 0 0 0 12 9.2z"/>
+            </svg>
+          </button>
         </div>
-      </section>
-    </div>
-  </aside>
+      </div>
+    </header>
+
+    <aside id="settings" class="settings is-hidden" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
+      <div class="settings-inner">
+        <header class="settings-head">
+          <h2 id="settings-title">Settings</h2>
+          <button type="button" id="btn-close-settings" class="icon-btn" aria-label="Close settings" data-tip="Close">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/>
+            </svg>
+          </button>
+        </header>
+
+        <section class="settings-block">
+          <h3>Playlist</h3>
+          <div id="scene-toggles" class="scene-grid"></div>
+        </section>
+
+        <section class="settings-block">
+          <h3>Scene length</h3>
+          <div id="duration-presets" class="segmented" role="radiogroup" aria-label="Scene length"></div>
+          <label class="custom-duration" id="custom-duration-wrap" hidden>
+            Custom
+            <input id="custom-duration" type="number" min="5" max="7200" step="5" inputmode="numeric" />
+            <span>seconds</span>
+          </label>
+        </section>
+
+        <section class="playback-row">
+          <label class="switch">
+            <input id="shuffle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span>Shuffle</span>
+          </label>
+          <label class="switch">
+            <input id="sound" type="checkbox" checked />
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span>Sound</span>
+          </label>
+          <label class="volume">
+            <span>Volume</span>
+            <input id="volume" type="range" min="0" max="100" value="55" />
+          </label>
+        </section>
+      </div>
+    </aside>
+  </div>
 
   <script type="module" src="js/main.js"></script>
 </body>
