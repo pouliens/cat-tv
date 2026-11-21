@@ -1,3 +1,4 @@
+import { GoldfishScene } from './goldfish.js';
 import { AquariumScene } from './aquarium.js';
 import { LogoScene } from './logo.js';
 import { IntroScene } from './intro.js';
@@ -11,6 +12,7 @@ import { FirefliesScene } from './fireflies.js';
 
 export const SCENES = [
   { id: 'aquarium', name: 'Aquarium', blurb: 'Fish, bubbles, and swaying seaweed', sound: true, factory: AquariumScene },
+  { id: 'goldfish', name: 'Lone Goldfish', blurb: 'One goldfish glides through clear blue water, seen from above', sound: true, factory: GoldfishScene },
   { id: 'logo', name: 'Bouncing Logo', blurb: 'A CAT TV logo that bounces and changes colour', sound: true, factory: LogoScene },
   { id: 'intro', name: 'Meow Intro', blurb: 'A looping red-ribbon letter animation', sound: true, factory: IntroScene },
   { id: 'birds', name: 'Birds', blurb: 'Birds hopping, flying, and singing', sound: true, factory: BirdsScene },

@@ -21,7 +21,7 @@ New sessions default to 35% app volume. Settings are stored in `localStorage` on
 
 ## Scenes
 
-All art is original. The interface uses inline SVG icons and a system font stack, so it does not depend on icon fonts or Google Fonts. All ten scenes have sound cues synthesized in the browser with the Web Audio API — there are no audio files and no trademarked logos.
+All art is original. The interface uses inline SVG icons and a system font stack, so it does not depend on icon fonts or Google Fonts. All scenes have sound cues synthesized in the browser with the Web Audio API — there are no audio files and no trademarked logos.
 
 1. **Aquarium** — fish of mixed sizes and colours, rising bubbles, swaying seaweed, and the occasional dart.
 2. **Bouncing Logo** — a typographic “CAT TV” badge bounces off the edges, changes colour on each hit, and celebrates a corner strike.
@@ -33,6 +33,7 @@ All art is original. The interface uses inline SVG icons and a system font stack
 8. **Wand Toy** — a feather wand swings, traces a figure-eight, twitches, drags, and yanks, like someone playing with a cat.
 9. **Yarn Ball** — a ball of yarn rolls around the rug and leaves an unravelling trail.
 10. **Fireflies** — a night meadow of blinking, drifting lights, with very quiet cricket-like pulses.
+11. **[Lone Goldfish](https://pouliens.github.io/cat-tv/?scene=goldfish)** — one orange fish seen from above in still blue water. Tap nearby to make it dart away, or farther away to guide it.
 
 You can turn any scene off in the playlist. New scenes can be added later without changing the player: drop a class in `js/scenes/`, then register it in `js/scenes/registry.js`. Themes are reserved for later; the registry already has a `THEMES` map (today only `classic`).
 
