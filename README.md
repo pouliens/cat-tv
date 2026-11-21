@@ -2,21 +2,23 @@
 
 A tiny fullscreen web app of motion scenes for cats, meant to be played on a TV, tablet, or phone. There is no build step — just static HTML, CSS, and JavaScript.
 
-Open the live site (once published) and press **Start**. That click unlocks audio on mobile and TV browsers, asks for fullscreen, and requests a screen wake lock so the device is less likely to doze off mid-fish.
+Open the [scene guide](https://pouliens.github.io/cat-tv/) and press **Play playlist**, or select any scene to start there. That click unlocks audio on mobile and TV browsers, asks for fullscreen, and requests a screen wake lock so the device is less likely to doze off mid-fish.
 
 ## How to use it
 
 1. Open the page on the screen your cat can see.
-2. Press **Start**. Allow fullscreen if the browser asks.
-3. Move the pointer, tap the screen, or press **Enter** to show settings. The panel hides itself after a few seconds.
+2. Press **Play playlist** or choose a scene. Allow fullscreen if the browser asks.
+3. Move the pointer or tap the scene to reveal the player controls. Open **Settings** to edit the playlist. Settings stay open until dismissed.
 4. Leave it running. Scenes rotate on their own, or skip with the on-screen buttons / a remote.
 
 ### Controls
 
 | Action | How |
 | --- | --- |
-| Show or hide settings | Tap, move the pointer, or press Enter |
-| Next / previous scene | On-screen buttons, Left/Right (or Up/Down) arrow keys, TV remote arrows |
+| Show controls | Tap the scene, move the pointer, or press Tab |
+| Settings | Settings button, or Enter when the scene has focus |
+| Return to the scene guide | Grid button on the player toolbar |
+| Next / previous scene | On-screen buttons, Left/Right (or Up/Down) arrow keys, TV remote arrows when the scene has focus |
 | Fullscreen | The fullscreen button, or `F` |
 | Mute | The Sound toggle, or `M` |
 | Hide settings | Close button or Escape |

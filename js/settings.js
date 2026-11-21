@@ -31,14 +31,16 @@ export function loadSettings() {
     const data = JSON.parse(raw);
     const known = new Set(SCENES.map((s) => s.id));
     const enabled = Array.isArray(data.enabled)
-      ? data.enabled.filter((id) => known.has(id))
+      ? [...new Set(data.enabled.filter((id) => known.has(id)))]
       : base.enabled;
     return {
       ...base,
-      ...data,
+      durationId: DURATION_PRESETS.some((p) => p.id === data.durationId) ? data.durationId : base.durationId,
+      shuffle: data.shuffle === true,
+      muted: data.muted === true,
       enabled: enabled.length ? enabled : base.enabled,
-      customSeconds: Math.max(5, Math.min(7200, Number(data.customSeconds) || base.customSeconds)),
-      volume: Math.max(0, Math.min(1, Number(data.volume) ?? base.volume)),
+      customSeconds: Math.max(5, Math.min(7200, Math.round(Number(data.customSeconds)) || base.customSeconds)),
+      volume: Number.isFinite(data.volume) ? Math.max(0, Math.min(1, data.volume)) : base.volume,
     };
   } catch {
     return base;
