@@ -1,4 +1,4 @@
-import { lerp, TAU } from '../utils.js';
+import { clamp, lerp, TAU } from '../utils.js';
 
 const CYCLE = 6.4;
 
@@ -41,10 +41,21 @@ export class IntroScene {
     }
   }
 
+  tap(x, y) {
+    const size = Math.min(this.w, this.h) * .42;
+    this.anchor = {
+      x: clamp(x, size * .6, this.w - size * .6),
+      y: clamp(y, size * .65, this.h - size * .85),
+    };
+    this.t = CYCLE * .14;
+    this.playedSting = false;
+  }
+
   update(dt) {
     this.t += dt;
     if (this.t >= CYCLE) {
       this.t -= CYCLE;
+      this.anchor = null;
       this.playedSting = false;
     }
     const p = this.t / CYCLE;
@@ -81,8 +92,8 @@ export class IntroScene {
     }
 
     const size = Math.min(w, h) * 0.42;
-    const cx = w / 2;
-    const cy = h * 0.46;
+    const cx = this.anchor?.x ?? w / 2;
+    const cy = this.anchor?.y ?? h * 0.46;
 
     // Line grows, then ribbon draws the M, then it holds and fades
     let line = 0;
@@ -134,7 +145,7 @@ export class IntroScene {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.letterSpacing = '0.28em';
-      ctx.fillText('MEOW', w / 2, cy + size * 0.62);
+      ctx.fillText('MEOW', cx, cy + size * 0.62);
       ctx.restore();
     }
   }

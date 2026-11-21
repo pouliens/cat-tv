@@ -1,4 +1,4 @@
-import { choice, lerp, rand, TAU } from '../utils.js';
+import { nearestTo, choice, lerp, rand, TAU } from '../utils.js';
 
 export class MiceScene {
   constructor({ audio }) {
@@ -68,6 +68,14 @@ export class MiceScene {
     m.hideSpot = spot;
     m.wait = 8;
     this.soundT = 0;
+  }
+
+  tap(x, y) {
+    const visible = this.mice.filter(mouse => mouse.state !== 'hide');
+    const mouse = nearestTo(visible.length ? visible : this.mice, x, y);
+    const exits = this.spots.filter(spot => Math.abs(spot.x - mouse.x) > this.w * .12);
+    const farSide = x < mouse.x ? this.w : 0;
+    this._runTo(mouse, nearestTo(exits, farSide, this.baseY));
   }
 
   update(dt) {

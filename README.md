@@ -9,7 +9,8 @@ Open [Cat TV](https://pouliens.github.io/cat-tv/) on a TV, tablet, or phone. A r
 | Action | How |
 | --- | --- |
 | Enable sound when prompted | Press OK / Enter while watching, or tap **Enable sound**. The player remembers an intentional mute. |
-| Show controls | Move the pointer, tap the scene, or press Tab. OK / Enter from the scene focuses the toolbar once audio is enabled. |
+| Show controls | Move the pointer, tap **Controls** in the top corner on a touchscreen, or press Tab. OK / Enter from the scene focuses the toolbar once audio is enabled. |
+| Play with a scene | Tap the picture or click it with a mouse. Fish dart, birds lift off, toys move and fireflies gather around the touch. |
 | Change scene | Press a directional key while watching, or use Previous and Next on the toolbar. |
 | Browse and edit | Use the directional pad to focus a control, then OK to activate it. The grid button opens the guide and the gear opens settings. |
 | Leave settings | Close, Escape or the remote’s Back key when delivered by the browser. |

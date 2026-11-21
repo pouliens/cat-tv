@@ -1,4 +1,4 @@
-import { choice, lerp, rand, TAU } from '../utils.js';
+import { clamp, choice, lerp, rand, TAU } from '../utils.js';
 
 export class LaserScene {
   constructor({ audio } = {}) {
@@ -54,13 +54,17 @@ export class LaserScene {
 
   _pickZip() {
     this.audio?.cue();
-    this.sx = this.x;
-    this.sy = this.y;
     const p = this._randPos();
     // Sometimes zip a long way across the screen
     if (Math.random() < 0.45) {
       p.x = this.x < this.w / 2 ? rand(this.w * 0.65, this.w * 0.94) : rand(this.w * 0.06, this.w * 0.35);
     }
+    this._zipTo(p);
+  }
+
+  _zipTo(p) {
+    this.sx = this.x;
+    this.sy = this.y;
     this.tx = p.x;
     this.ty = p.y;
     const d = Math.hypot(this.tx - this.sx, this.ty - this.sy);
@@ -93,6 +97,17 @@ export class LaserScene {
       this.state = 'zip';
       this._pickZip();
     }
+  }
+
+  tap(x, y) {
+    const margin = this._margin();
+    const hit = Math.hypot(this.x - x, this.y - y) < 54;
+    const dest = hit ? {
+      x: x < this.w / 2 ? this.w * .83 : this.w * .17,
+      y: y < this.h / 2 ? this.h * .7 : this.h * .3,
+    } : { x: clamp(x, margin.x0, margin.x1), y: clamp(y, margin.y0, margin.y1) };
+    this.state = 'zip';
+    this._zipTo(dest);
   }
 
   update(dt) {

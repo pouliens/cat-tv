@@ -16,3 +16,16 @@ export function wrap(v, max) {
 export function hashHue(n) {
   return ((n * 47) % 360 + 360) % 360;
 }
+
+export function nearestTo(items, x, y) {
+  let nearest;
+  let best = Infinity;
+  for (const item of items) {
+    const distance = (item.x - x) ** 2 + (item.y - y) ** 2;
+    if (distance < best) {
+      nearest = item;
+      best = distance;
+    }
+  }
+  return nearest;
+}

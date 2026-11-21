@@ -1,4 +1,4 @@
-import { rand, TAU } from '../utils.js';
+import { clamp, nearestTo, rand, TAU } from '../utils.js';
 
 export class FirefliesScene {
   constructor({ audio }) {
@@ -53,10 +53,28 @@ export class FirefliesScene {
     }
   }
 
+  tap(x, y) {
+    this.light = { x, y: clamp(y, this.h * .08, this.h * .95), time: 1.2 };
+    const closest = nearestTo(this.bugs, x, y);
+    const reach = Math.max(110, Math.min(this.w, this.h) * .32);
+    for (const bug of this.bugs) {
+      bug.follow = bug === closest || Math.hypot(bug.x - x, bug.y - y) < reach;
+    }
+  }
+
   update(dt) {
     this.t += dt;
     const { w, h } = this;
+    if (this.light) {
+      this.light.time -= dt;
+      if (this.light.time <= 0) this.light = null;
+    }
     for (const b of this.bugs) {
+      if (b.follow && this.light) {
+        const follow = 1 - Math.exp(-1.9 * dt);
+        b.x += (this.light.x + 20 * Math.cos(b.phase) - b.x) * follow;
+        b.y += (this.light.y + 20 * Math.sin(b.phase) - b.y) * follow;
+      }
       b.x += b.vx * dt + Math.sin(this.t * 0.7 + b.phase) * 6 * dt;
       b.y += b.vy * dt + Math.cos(this.t * 0.5 + b.phase) * 5 * dt;
       if (Math.random() < dt * 0.3) {
@@ -141,7 +159,7 @@ export class FirefliesScene {
     }
 
     for (const b of this.bugs) {
-      const g = this._glow(b);
+      const g = Math.max(this._glow(b), b.follow && this.light ? Math.min(.9, this.light.time) : 0);
       if (g < 0.05) {
         ctx.fillStyle = `rgba(180, 220, 80, ${0.15 + g})`;
         ctx.beginPath();
