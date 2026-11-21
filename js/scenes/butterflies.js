@@ -11,7 +11,8 @@ const WING_COLORS = [
 ];
 
 export class ButterfliesScene {
-  constructor() {
+  constructor({ audio } = {}) {
+    this.audio = audio;
     this.w = 800;
     this.h = 600;
     this.t = 0;
@@ -93,6 +94,7 @@ export class ButterfliesScene {
         }
         if (b.wait <= 0) {
           b.state = 'fly';
+          this.audio?.cue();
           b.a = rand(-2.4, -0.7);
           b.wait = rand(2.5, 6);
           b.flower = null;

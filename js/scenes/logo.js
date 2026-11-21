@@ -57,7 +57,6 @@ export class LogoScene {
 
   _celebrate(cx, cy) {
     this.flash = 1;
-    this.audio?.cornerChime?.();
     this.rings.push({ x: cx, y: cy, r: 10, life: 1, color: this.color });
     for (let i = 0; i < 42; i++) {
       const a = (i / 42) * TAU + rand(-0.1, 0.1);
@@ -99,7 +98,10 @@ export class LogoScene {
       this.vy = -Math.abs(this.vy);
       hitY = true;
     }
-    if (hitX || hitY) this._hitColor();
+    if (hitX || hitY) {
+      this._hitColor();
+      this.audio?.cue();
+    }
     if (hitX && hitY) {
       this._celebrate(this.x + this.logoW / 2, this.y + this.logoH / 2);
     }

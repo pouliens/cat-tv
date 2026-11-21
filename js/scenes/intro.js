@@ -50,7 +50,7 @@ export class IntroScene {
     const p = this.t / CYCLE;
     if (!this.playedSting && p >= 0.28) {
       this.playedSting = true;
-      this.audio?.introSting?.();
+      this.audio?.cue();
     }
   }
 

@@ -637,3 +637,30 @@ body.cursor-on label { cursor: pointer; }
     transition: none !important;
   }
 }
+
+.audio-prompt {
+  position: fixed;
+  z-index: 3;
+  left: 50%;
+  bottom: max(24px, var(--safe-b));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 48px;
+  padding: .6rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface-strong);
+  color: var(--text);
+  font: 650 1rem var(--font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.audio-prompt span { color: var(--text-dim); font-size: .875rem; font-weight: 400; }
+.audio-prompt:focus-visible { outline: 3px solid var(--accent); }
+@media (min-width: 1800px) {
+  .topbar-inner { max-width: min(80vw, 1600px); }
+  .settings { right: max(10vw, calc((100vw - 1600px) / 2)); }
+  .now-text strong, #now-playing, .audio-prompt { font-size: 1.3rem; }
+}

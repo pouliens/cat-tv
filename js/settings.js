@@ -19,7 +19,7 @@ export function defaultSettings() {
     customSeconds: 180,
     shuffle: false,
     muted: false,
-    volume: 0.55,
+    volume: 0.35,
   };
 }
 

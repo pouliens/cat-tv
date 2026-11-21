@@ -1,7 +1,8 @@
 import { rand, TAU } from '../utils.js';
 
 export class WandScene {
-  constructor() {
+  constructor({ audio } = {}) {
+    this.audio = audio;
     this.w = 800;
     this.h = 600;
     this.t = 0;
@@ -47,6 +48,7 @@ export class WandScene {
   }
 
   _pickMode() {
+    this.audio?.cue();
     const roll = Math.random();
     if (roll < 0.28) { this.mode = 'sweep'; this.wait = rand(1.6, 3.2); }
     else if (roll < 0.46) { this.mode = 'figure8'; this.wait = rand(2, 4); }

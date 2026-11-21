@@ -6,7 +6,7 @@ import { DURATION_PRESETS, loadSettings, saveSettings, durationMs } from './sett
 
 const params = new URLSearchParams(location.search);
 const qs = {
-  autostart: params.get('autostart') === '1' || params.get('autostart') === 'true',
+  guide: params.get('guide') === '1' || params.get('autostart') === '0',
   scene: params.get('scene'),
   muted: params.get('sound') === '0' || params.get('muted') === '1',
   nofullscreen: params.get('nofullscreen') === '1' || params.get('fullscreen') === '0',
@@ -37,7 +37,8 @@ const btnSettings = document.getElementById('btn-settings');
 const btnClose = document.getElementById('btn-close-settings');
 
 const engine = new Engine(canvas);
-const audio = new AudioEngine();
+const audioPrompt = document.getElementById('enable-audio');
+const audio = new AudioEngine(syncAudioState);
 const settings = loadSettings();
 if (qs.muted) settings.muted = true;
 
@@ -84,7 +85,9 @@ function showToast(name) {
 function loadScene(id, { announce = true } = {}) {
   const def = getScene(id);
   currentId = def.id;
+  audio.setScene(def.id);
   engine.setScene(createScene(def.id, { audio }));
+  if (playing) audio.cue();
   nowPlaying.textContent = def.name;
   startedAt = performance.now();
   if (announce && playing) showToast(def.name);
@@ -160,17 +163,44 @@ function syncFsUi() {
   btnFs.dataset.tip = on ? 'Exit full screen' : 'Fullscreen';
 }
 
+function needsAudioGesture() {
+  return playing && audio.supported && !settings.muted && !audio.ready;
+}
+
+let soundWasReady = false;
+function syncAudioState() {
+  if (playing && !document.hidden && audio.ready && !soundWasReady) audio.cue();
+  soundWasReady = audio.ready;
+  syncMuteUi();
+}
+
+function syncAudioPrompt() {
+  audioPrompt.hidden = !needsAudioGesture() || qs.hideui || !chromeVisible() || settingsOpen();
+}
+
+function enableAudio() {
+  audio.muted = false;
+  audio.unlock();
+  if (document.activeElement === audioPrompt) canvas.focus();
+}
+
 function syncMuteUi() {
   const muted = settings.muted;
-  soundEl.checked = !muted;
+  const blocked = needsAudioGesture();
+  soundEl.disabled = !audio.supported;
+  soundEl.checked = audio.supported && !muted && !blocked;
+  btnMute.hidden = !audio.supported;
+  syncAudioPrompt();
   const guideSound = document.getElementById('guide-sound');
   const icon = btnMute.querySelector(muted ? '.ico-off' : '.ico-on').cloneNode(true);
-  guideSound.replaceChildren(icon, muted ? 'Sound off' : 'Sound on');
+  guideSound.hidden = !audio.supported;
+  guideSound.textContent = '';
+  guideSound.append(icon, muted ? 'Sound off' : 'Sound on');
   guideSound.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound');
-  btnMute.classList.toggle('is-active', muted);
+  btnMute.classList.toggle('is-active', muted || blocked);
   btnMute.setAttribute('aria-pressed', muted ? 'true' : 'false');
-  btnMute.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound');
-  btnMute.dataset.tip = muted ? 'Unmute' : 'Mute';
+  btnMute.setAttribute('aria-label', blocked ? 'Enable sound' : muted ? 'Unmute sound' : 'Mute sound');
+  btnMute.dataset.tip = blocked ? 'Enable sound' : muted ? 'Unmute' : 'Mute';
 }
 
 function setMuted(muted) {
@@ -186,6 +216,7 @@ function openSettings() {
   settingsEl.classList.remove('is-hidden');
   settingsEl.setAttribute('aria-hidden', 'false');
   btnSettings.setAttribute('aria-expanded', 'true');
+  syncAudioPrompt();
   btnClose.focus({ preventScroll: true });
 }
 
@@ -195,6 +226,7 @@ function closeSettings() {
   settingsEl.classList.add('is-hidden');
   settingsEl.setAttribute('aria-hidden', 'true');
   btnSettings.setAttribute('aria-expanded', 'false');
+  syncAudioPrompt();
 }
 
 function showChrome({ panel = false } = {}) {
@@ -202,6 +234,7 @@ function showChrome({ panel = false } = {}) {
   chromeEl.inert = false;
   chromeEl.classList.remove('is-hidden');
   document.body.classList.add('cursor-on');
+  syncAudioPrompt();
   if (panel) openSettings();
   bumpIdle();
 }
@@ -213,6 +246,7 @@ function hideChrome() {
   chromeEl.inert = true;
   chromeEl.classList.add('is-hidden');
   document.body.classList.remove('cursor-on');
+  syncAudioPrompt();
 }
 
 function bumpIdle() {
@@ -316,7 +350,13 @@ customInput.addEventListener('keydown', (event) => {
 
 btnPrev.addEventListener('click', () => { nextScene(-1); bumpIdle(); });
 btnNext.addEventListener('click', () => { nextScene(1); bumpIdle(); });
-btnMute.addEventListener('click', () => { setMuted(!settings.muted); bumpIdle(); });
+function toggleSound() {
+  if (needsAudioGesture()) enableAudio();
+  else setMuted(!settings.muted);
+  bumpIdle();
+}
+btnMute.addEventListener('click', toggleSound);
+audioPrompt.addEventListener('click', enableAudio);
 btnFs.addEventListener('click', () => { toggleFullscreen(); bumpIdle(); });
 btnSettings.addEventListener('click', () => {
   if (settingsOpen()) closeSettings();
@@ -344,7 +384,7 @@ function firstScene() {
   return SCENES.find((scene) => scene.id === qs.scene)?.id || enabledList()[0].id;
 }
 
-function startApp(id = firstScene()) {
+function startApp(id = firstScene(), fromGesture = true) {
   if (playing) return;
   returnFocus = document.activeElement;
   playing = true;
@@ -353,12 +393,12 @@ function startApp(id = firstScene()) {
   canvas.hidden = false;
   canvas.focus({ preventScroll: true });
   audio.muted = settings.muted;
-  audio.unlock();
   loadScene(id, { announce: false });
+  audio.unlock();
   engine.start();
   if (!qs.hideui) showChrome({ panel: stayOpen });
   else document.body.classList.remove('cursor-on');
-  if (!qs.nofullscreen) enterFullscreen();
+  if (fromGesture && !qs.nofullscreen) enterFullscreen();
   requestWakeLock();
 }
 
@@ -367,6 +407,8 @@ function showGuide() {
     playing = false;
     engine.stop();
     audio.muted = true;
+    audio.setScene(null);
+    syncAudioState();
     const lock = wakeLock;
     wakeLock = null;
     lock?.release().catch(() => {});
@@ -399,6 +441,7 @@ document.addEventListener('pointermove', (event) => {
 
 document.addEventListener('pointerdown', (e) => {
   if (!playing || qs.hideui) return;
+  if (audioPrompt.contains(e.target)) return;
   if (chromeEl.contains(e.target)) {
     bumpIdle();
     return;
@@ -450,12 +493,18 @@ document.addEventListener('keydown', (e) => {
     }
     return;
   }
-  if (e.key === 'Escape') {
+  const back = e.key === 'Escape' || e.key === 'BrowserBack' || e.keyCode === 10009 || e.keyCode === 461;
+  if (back) {
+    e.preventDefault();
     if (settingsOpen()) closeSettings();
-    else hideChrome();
+    else if (chromeVisible()) hideChrome();
+    else showGuide();
   } else if (e.key === 'Tab' && !qs.hideui) {
     showChrome();
-  } else if (arrow && !(field && e.target.type !== 'checkbox')) {
+  } else if (arrow && !(field && (
+    (e.target.type === 'range' && ['ArrowLeft', 'ArrowRight'].includes(e.key)) ||
+    (['number', 'select-one'].includes(e.target.type) && ['ArrowUp', 'ArrowDown'].includes(e.key))
+  ))) {
     e.preventDefault();
     if (chromeEl.contains(e.target)) moveFocus(chromeEl, e.key);
     else nextScene(e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1);
@@ -464,11 +513,17 @@ document.addEventListener('keydown', (e) => {
     e.target.click();
   } else if (e.key === 'Enter' && !e.target.closest('button, input, select')) {
     e.preventDefault();
-    showChrome({ panel: true });
+    if (needsAudioGesture()) {
+      enableAudio();
+      if (!qs.nofullscreen) enterFullscreen();
+    } else if (!qs.hideui) {
+      showChrome();
+      document.getElementById('btn-guide').focus();
+    }
   } else if (!field && e.key.toLowerCase() === 'f') {
     toggleFullscreen();
   } else if (!field && e.key.toLowerCase() === 'm') {
-    setMuted(!settings.muted);
+    toggleSound();
   }
   bumpIdle();
 });
@@ -477,10 +532,12 @@ document.addEventListener('visibilitychange', () => {
   if (!playing) return;
   if (document.hidden) {
     hiddenAt = performance.now();
+    audio.muted = true;
     engine.stop();
   } else {
     if (hiddenAt !== null) startedAt += performance.now() - hiddenAt;
     hiddenAt = null;
+    audio.muted = settings.muted;
     engine.start();
     requestWakeLock();
     audio.unlock();
@@ -488,8 +545,13 @@ document.addEventListener('visibilitychange', () => {
 });
 
 buildUi();
-if (qs.autostart) startApp();
-else showGuide();
+if (qs.guide) {
+  showGuide();
+} else {
+  const playlist = enabledList();
+  const random = playlist[Math.floor(Math.random() * playlist.length)];
+  startApp(SCENES.find((scene) => scene.id === qs.scene)?.id || random.id, false);
+}
 
 window.CatTV = {
   start: startApp,

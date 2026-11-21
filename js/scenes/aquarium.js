@@ -129,7 +129,7 @@ export class AquariumScene {
     this.bubbles = this.bubbles.filter((b) => b.y + b.r > -10);
     this.soundTimer -= dt;
     if (this.soundTimer <= 0) {
-      if (Math.random() < 0.7) this.audio?.bubble?.();
+      if (Math.random() < 0.7) this.audio?.cue();
       this.soundTimer = rand(1.6, 4.2);
     }
   }

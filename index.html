@@ -16,7 +16,7 @@
 <body>
   <canvas id="stage" tabindex="-1" aria-label="Scene player"></canvas>
 
-  <main id="start-screen" class="guide">
+  <main id="start-screen" class="guide" hidden>
     <div class="guide-wrap">
       <header class="guide-head">
         <span class="brand"><img src="favicon.svg" width="40" height="40" alt="" />Cat TV</span>
@@ -38,6 +38,7 @@
     </div>
   </main>
 
+  <button type="button" id="enable-audio" class="audio-prompt" hidden>Enable sound <span>Press OK or tap</span></button>
   <div id="scene-toast" class="scene-toast" hidden></div>
 
   <div id="chrome" class="chrome is-hidden" inert>
