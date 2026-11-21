@@ -301,13 +301,17 @@ volumeEl.addEventListener('input', () => {
   persist();
   bumpIdle();
 });
-customInput.addEventListener('change', () => {
+function commitCustomDuration() {
   const seconds = customInput.valueAsNumber;
   if (Number.isFinite(seconds)) settings.customSeconds = Math.max(5, Math.min(7200, Math.round(seconds)));
   customInput.value = String(settings.customSeconds);
   startedAt = performance.now();
   persist();
   bumpIdle();
+}
+customInput.addEventListener('blur', commitCustomDuration);
+customInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') customInput.blur();
 });
 
 btnPrev.addEventListener('click', () => { nextScene(-1); bumpIdle(); });
