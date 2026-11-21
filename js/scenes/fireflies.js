@@ -186,11 +186,19 @@ export class FirefliesScene {
 
   _tree(ctx, x, y, ht) {
     ctx.fillRect(x - 7, y - ht * 0.42, 14, ht * 0.42);
+    // Each lobe starts its own subpath; without moveTo the path joins them
+    // with straight lines that cut wedge-shaped gaps out of the crown.
+    const lobes = [
+      [x, y - ht * 0.58, ht * 0.22, ht * 0.3],
+      [x - ht * 0.16, y - ht * 0.46, ht * 0.16, ht * 0.2],
+      [x + ht * 0.16, y - ht * 0.46, ht * 0.16, ht * 0.2],
+      [x, y - ht * 0.72, ht * 0.14, ht * 0.16],
+    ];
     ctx.beginPath();
-    ctx.ellipse(x, y - ht * 0.58, ht * 0.22, ht * 0.3, 0, 0, TAU);
-    ctx.ellipse(x - ht * 0.16, y - ht * 0.46, ht * 0.16, ht * 0.2, 0, 0, TAU);
-    ctx.ellipse(x + ht * 0.16, y - ht * 0.46, ht * 0.16, ht * 0.2, 0, 0, TAU);
-    ctx.ellipse(x, y - ht * 0.72, ht * 0.14, ht * 0.16, 0, 0, TAU);
+    for (const [cx, cy, rx, ry] of lobes) {
+      ctx.moveTo(cx + rx, cy);
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, TAU);
+    }
     ctx.fill();
   }
 }

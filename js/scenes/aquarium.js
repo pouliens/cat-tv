@@ -274,7 +274,9 @@ export class AquariumScene {
       ctx.fillStyle = f.pal.stripe;
       ctx.globalAlpha = 0.75;
       ctx.beginPath();
+      ctx.moveTo(L * 0.12 + L * 0.07, -bodyH * 0.08);
       ctx.arc(L * 0.12, -bodyH * 0.08, L * 0.07, 0, TAU);
+      ctx.moveTo(-L * 0.02 + L * 0.05, bodyH * 0.1);
       ctx.arc(-L * 0.02, bodyH * 0.1, L * 0.05, 0, TAU);
       ctx.fill();
       ctx.globalAlpha = 1;
