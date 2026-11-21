@@ -19,19 +19,18 @@ export class Engine {
   resize() {
     const cssW = Math.max(1, window.innerWidth);
     const cssH = Math.max(1, window.innerHeight);
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const cap = 2560;
-    if (cssW * dpr > cap) dpr = cap / cssW;
-    if (cssH * dpr > cap) dpr = Math.min(dpr, cap / cssH);
-    this.cssW = cssW;
-    this.cssH = cssH;
+    // Render at most a Full HD long edge and keep scene density consistent on 4K TVs.
+    const scale = Math.min(1, 1920 / Math.max(cssW, cssH));
+    this.cssW = Math.round(cssW * scale);
+    this.cssH = Math.round(cssH * scale);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2, 1920 / Math.max(this.cssW, this.cssH));
     this.dpr = dpr;
-    this.canvas.width = Math.round(cssW * dpr);
-    this.canvas.height = Math.round(cssH * dpr);
+    this.canvas.width = Math.round(this.cssW * dpr);
+    this.canvas.height = Math.round(this.cssH * dpr);
     this.canvas.style.width = cssW + 'px';
     this.canvas.style.height = cssH + 'px';
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.scene?.resize?.(cssW, cssH);
+    this.scene?.resize?.(this.cssW, this.cssH);
   }
 
   setScene(scene) {

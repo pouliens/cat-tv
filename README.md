@@ -2,30 +2,25 @@
 
 A tiny fullscreen web app of motion scenes for cats, meant to be played on a TV, tablet, or phone. There is no build step — just static HTML, CSS, and JavaScript.
 
-Open the live site (once published) and press **Start**. That click unlocks audio on mobile and TV browsers, asks for fullscreen, and requests a screen wake lock so the device is less likely to doze off mid-fish.
+Open [Cat TV](https://pouliens.github.io/cat-tv/) on a TV, tablet, or phone. A random enabled scene starts immediately. After that, scenes follow the saved playlist order or shuffle setting. Open the [scene guide](https://pouliens.github.io/cat-tv/?guide=1) to browse the original animations or play a specific scene.
 
-## How to use it
-
-1. Open the page on the screen your cat can see.
-2. Press **Start**. Allow fullscreen if the browser asks.
-3. Move the pointer, tap the screen, or press **Enter** to show settings. The panel hides itself after a few seconds.
-4. Leave it running. Scenes rotate on their own, or skip with the on-screen buttons / a remote.
-
-### Controls
+## Playback and TV controls
 
 | Action | How |
 | --- | --- |
-| Show or hide settings | Tap, move the pointer, or press Enter |
-| Next / previous scene | On-screen buttons, Left/Right (or Up/Down) arrow keys, TV remote arrows |
-| Fullscreen | The fullscreen button, or `F` |
-| Mute | The Sound toggle, or `M` |
-| Hide settings | Close button or Escape |
+| Enable sound when prompted | Press OK / Enter while watching, or tap **Enable sound**. The player remembers an intentional mute. |
+| Show controls | Move the pointer, tap the scene, or press Tab. OK / Enter from the scene focuses the toolbar once audio is enabled. |
+| Change scene | Press a directional key while watching, or use Previous and Next on the toolbar. |
+| Browse and edit | Use the directional pad to focus a control, then OK to activate it. The grid button opens the guide and the gear opens settings. |
+| Leave settings | Close, Escape or the remote’s Back key when delivered by the browser. |
+| Fullscreen | Use the fullscreen button or F on supported browsers. |
+| Mute | Use the speaker button or M. |
 
-Settings are stored in `localStorage` on that device: which scenes are in the playlist, how long each stays (30 seconds, 1, 2, 5, 10, or 30 minutes, or a custom number of seconds), shuffle vs in order, and sound / volume.
+New sessions default to 35% app volume. Settings are stored in `localStorage` on that device: which scenes are in the playlist, how long each stays (30 seconds, 1, 2, 5, 10, or 30 minutes, or a custom number of seconds), shuffle vs in order, and sound / volume.
 
 ## Scenes
 
-All art is original. The interface uses inline SVG icons and a system font stack, so it does not depend on icon fonts or Google Fonts. All sounds are synthesized in the browser with the Web Audio API — there are no audio files and no trademarked logos.
+All art is original. The interface uses inline SVG icons and a system font stack, so it does not depend on icon fonts or Google Fonts. All ten scenes have sound cues synthesized in the browser with the Web Audio API — there are no audio files and no trademarked logos.
 
 1. **Aquarium** — fish of mixed sizes and colours, rising bubbles, swaying seaweed, and the occasional dart.
 2. **Bouncing Logo** — a typographic “CAT TV” badge bounces off the edges, changes colour on each hit, and celebrates a corner strike.
@@ -59,9 +54,10 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080`. Opening the HTML file directly (`file://`) may block modules or audio in some browsers, so a local server is the reliable option.
 
-Useful query flags (handy for testing):
+Useful query flags:
 
-- `?autostart=1&scene=aquarium` — skip the start screen and jump to a scene
+- `?scene=aquarium` — start with a specific scene
+- `?guide=1` or `?autostart=0` — open the scene guide
 - `&sound=0` — start muted
 - `&nofullscreen=1` — do not request fullscreen
 - `&hideui=1` — keep the settings panel hidden
@@ -75,5 +71,5 @@ This repo is set up to serve from the root of the `main` branch. In the GitHub r
 ## Notes
 
 - Wake lock and fullscreen depend on the browser. Some Smart TV and iOS browsers ignore one or both; the scenes still run.
-- TV browsers can be underpowered. The canvas caps resolution so it stays smooth, but if a set-top box stutters, try turning off a couple of busy scenes (fireflies, aquarium).
-- Keep volume modest at first — chirps are meant to be bright, and a quiet room can make them feel louder than expected.
+- The canvas caps its longest rendering edge at 1920 pixels, including on 4K displays. Screen size, browser support and GPU performance vary across TVs.
+- Aquarium bubbles, bird calls, meadow and feather rustles, mouse footfalls, soft yarn taps and short tonal cues use gradual attacks and releases. Each scene spaces its cues at least 1.8 seconds apart. The TV’s own volume also affects playback.

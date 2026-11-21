@@ -1,7 +1,8 @@
 import { lerp, rand, TAU } from '../utils.js';
 
 export class YarnScene {
-  constructor() {
+  constructor({ audio } = {}) {
+    this.audio = audio;
     this.w = 800;
     this.h = 600;
     this.t = 0;
@@ -70,7 +71,10 @@ export class YarnScene {
     this.trail.push({ x: this.x, y: this.y });
     this.maxTrail = Math.min(400, 180 + Math.floor(this.t * 8));
     if (this.trail.length > this.maxTrail) this.trail.shift();
-    if (bounced) this.unravel = 1;
+    if (bounced) {
+      this.unravel = 1;
+      this.audio?.cue();
+    }
     if (this.unravel > 0) this.unravel = Math.max(0, this.unravel - dt * 2);
   }
 

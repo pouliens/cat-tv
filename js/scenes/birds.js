@@ -176,7 +176,7 @@ export class BirdsScene {
     }
     this.chirpT -= dt;
     if (this.chirpT <= 0) {
-      this.audio?.birdChirp?.();
+      this.audio?.cue();
       this.chirpT = rand(0.35, 2.2);
       if (Math.random() < 0.25) this.chirpT = rand(0.08, 0.22);
     }

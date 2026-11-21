@@ -1,7 +1,8 @@
 import { choice, lerp, rand, TAU } from '../utils.js';
 
 export class LaserScene {
-  constructor() {
+  constructor({ audio } = {}) {
+    this.audio = audio;
     this.w = 800;
     this.h = 600;
     this.t = 0;
@@ -52,6 +53,7 @@ export class LaserScene {
   }
 
   _pickZip() {
+    this.audio?.cue();
     this.sx = this.x;
     this.sy = this.y;
     const p = this._randPos();

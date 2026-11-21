@@ -113,7 +113,7 @@ export class MiceScene {
         // Slight hop
         m.y += Math.sin(this.t * 28 + m.phase) * 0.4;
         if (this.soundT <= 0) {
-          this.audio?.scurry?.();
+          this.audio?.cue();
           this.soundT = rand(0.25, 0.7);
         }
         if (d < 12 || m.wait <= 0) {

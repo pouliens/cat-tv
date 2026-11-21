@@ -72,7 +72,7 @@ export class FirefliesScene {
     }
     this.cricketT -= dt;
     if (this.cricketT <= 0) {
-      if (Math.random() < 0.7) this.audio?.cricket?.();
+      if (Math.random() < 0.7) this.audio?.cue();
       this.cricketT = rand(1.8, 4.5);
     }
   }
