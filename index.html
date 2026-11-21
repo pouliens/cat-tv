@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="CAT TV" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="Fullscreen aquarium, birds, laser dots and other motion scenes to entertain cats on a TV, tablet, or phone." />
+  <title>CAT TV — Entertainment for cats</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <canvas id="stage" aria-hidden="true"></canvas>
+
+  <div id="start-screen" class="overlay start-screen">
+    <div class="start-card">
+      <p class="eyebrow">For very important cats</p>
+      <h1 class="wordmark">CAT TV</h1>
+      <p class="tagline">Aquariums, bouncing logos, birdsong, laser dots, and more — built to play fullscreen on a TV, tablet, or phone.</p>
+      <button id="start-btn" class="start-btn" type="button">Start</button>
+      <p class="hint">Tap or move the pointer later to show settings. Arrow keys skip scenes; Enter opens settings.</p>
+    </div>
+  </div>
+
+  <div id="scene-toast" class="scene-toast" hidden></div>
+
+  <aside id="settings" class="settings hidden" role="dialog" aria-label="CAT TV settings" aria-hidden="true">
+    <div class="settings-inner">
+      <header class="settings-head">
+        <div>
+          <p class="settings-kicker">Now playing</p>
+          <h2 id="now-playing">CAT TV</h2>
+        </div>
+        <div class="icon-row">
+          <button type="button" id="btn-prev" class="icon-btn" title="Previous scene" aria-label="Previous scene">&#x23F4;</button>
+          <button type="button" id="btn-next" class="icon-btn" title="Next scene" aria-label="Next scene">&#x23F5;</button>
+          <button type="button" id="btn-fullscreen" class="icon-btn" title="Fullscreen" aria-label="Toggle fullscreen">&#x26F6;</button>
+          <button type="button" id="btn-close-settings" class="icon-btn" title="Hide settings" aria-label="Hide settings">&#x2715;</button>
+        </div>
+      </header>
+
+      <section class="settings-block">
+        <h3>Playlist</h3>
+        <div id="scene-toggles" class="chip-row"></div>
+      </section>
+
+      <section class="settings-block">
+        <h3>Scene length</h3>
+        <div id="duration-presets" class="chip-row"></div>
+        <label class="custom-duration" id="custom-duration-wrap" hidden>
+          Custom
+          <input id="custom-duration" type="number" min="5" max="7200" step="5" inputmode="numeric" />
+          <span>seconds</span>
+        </label>
+      </section>
+
+      <section class="settings-row">
+        <label class="toggle">
+          <input id="shuffle" type="checkbox" />
+          <span>Shuffle</span>
+        </label>
+        <label class="toggle">
+          <input id="sound" type="checkbox" checked />
+          <span>Sound</span>
+        </label>
+        <label class="volume">
+          <span>Volume</span>
+          <input id="volume" type="range" min="0" max="100" value="55" />
+        </label>
+        <div class="progress-wrap" title="Time left in this scene">
+          <div id="progress" class="progress"></div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

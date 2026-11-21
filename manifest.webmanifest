@@ -1,0 +1,13 @@
+{
+  "name": "CAT TV",
+  "short_name": "CAT TV",
+  "description": "Fullscreen screensaver scenes to entertain cats, played on a TV, tablet, or phone.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "fullscreen",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
