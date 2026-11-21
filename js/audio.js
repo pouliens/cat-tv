@@ -34,6 +34,39 @@ const CUES = {
   },
 };
 
+// Direct responses to a tap. Unlike cues they are not rate limited, so every paw gets an answer.
+const SOUNDS = {
+  goldfish: {
+    plip(s) {
+      const pitch = rand(520, 720);
+      s.tone(pitch, pitch * 2.4, .075, .16);
+      s.tone(pitch * 1.5, pitch * 3, .05, .06, .05);
+    },
+    swish(s) {
+      s.rustle(2400, .26, .34, 0, 520);
+      s.tone(300, 170, .14, .05);
+    },
+    splash(s) {
+      s.rustle(3200, .5, .55, 0, 420);
+      s.rustle(1300, .34, .32, .04, 260);
+      s.tone(240, 80, .3, .2);
+      for (let i = 0; i < 5; i++) {
+        const pitch = rand(1300, 2400);
+        s.tone(pitch, pitch * 1.5, .05, .07, rand(.16, .55));
+      }
+    },
+    surface(s) {
+      s.tone(170, 520, .2, .16);
+      s.tone(620, 1300, .07, .07, .15);
+      s.rustle(1800, .16, .14, .08, 900);
+    },
+    nibble(s) {
+      s.tone(900, 1700, .045, .08);
+      s.tone(1100, 2100, .04, .06, .09);
+    },
+  },
+};
+
 export class AudioEngine {
   constructor(onStateChange) {
     this.onStateChange = onStateChange;
@@ -101,6 +134,12 @@ export class AudioEngine {
     CUES[this.sceneId](this);
   }
 
+  sound(name) {
+    const play = SOUNDS[this.sceneId]?.[name];
+    if (!this.ready || !this.bus || !play) return;
+    play(this);
+  }
+
   // Give each sound a short attack and a smooth tail, including delayed notes.
   play(source, output, duration, peak, delay) {
     const t = this.ctx.currentTime + delay;
@@ -127,7 +166,7 @@ export class AudioEngine {
     this.play(source, source, duration, peak, delay);
   }
 
-  rustle(pitch, duration, peak, delay = 0) {
+  rustle(pitch, duration, peak, delay = 0, endPitch = pitch) {
     const buffer = this.ctx.createBuffer(1, Math.ceil(this.ctx.sampleRate * duration), this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
@@ -135,7 +174,9 @@ export class AudioEngine {
     source.buffer = buffer;
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.value = pitch;
+    const t = this.ctx.currentTime + delay;
+    filter.frequency.setValueAtTime(pitch, t);
+    if (endPitch !== pitch) filter.frequency.exponentialRampToValueAtTime(endPitch, t + duration);
     filter.Q.value = .8;
     source.connect(filter);
     this.play(source, filter, duration, peak, delay);

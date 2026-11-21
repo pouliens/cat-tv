@@ -1,4 +1,6 @@
-import { clamp, lerp, rand, TAU } from '../utils.js';
+import { clamp, easeOut, lerp, rand, TAU } from '../utils.js';
+
+const DIVE = .45, SURFACE = .55;
 
 // A still pool of light. Paint at low resolution once, then scale it behind the fish.
 function paintWater(w, h) {
@@ -33,6 +35,52 @@ export class GoldfishScene {
     this.heading = -.55;
     this.beat = 0;
     this.dart = 0;
+    // swim -> diving -> hidden -> surfacing -> swim, when a paw lands on the fish
+    this.mode = 'swim';
+    this.modeTime = 0;
+    this.hideFor = 0;
+    this.food = null;
+    this.ripples = [];
+    this.drops = [];
+    this.bubbles = [];
+    this.foam = [];
+  }
+
+  setMode(mode) {
+    this.mode = mode;
+    this.modeTime = 0;
+  }
+
+  ripple(x, y, { size = 1, delay = 0, life = 1.3, strength = 1 } = {}) {
+    this.ripples.push({ x, y, age: -delay, life, reach: this.length * 1.1 * size, strength });
+  }
+
+  bubbleBurst(x, y, count, spread = .25) {
+    for (let i = 0; i < count; i++) {
+      this.bubbles.push({
+        x: x + rand(-1, 1) * this.length * spread,
+        y: y + rand(-1, 1) * this.length * spread,
+        r: rand(.018, .045) * this.length,
+        age: -rand(0, .5),
+        life: rand(.7, 1.3),
+        drift: rand(-.08, .08) * this.length,
+      });
+    }
+  }
+
+  splash(x, y) {
+    for (let i = 0; i < 26; i++) {
+      const angle = rand(0, TAU), speed = rand(.9, 2.8) * this.length;
+      this.drops.push({
+        x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        z: 0, vz: rand(.8, 2.2) * this.length, r: rand(.018, .042) * this.length,
+      });
+    }
+    this.foam.push({ x, y, age: 0, life: 1.1 });
+    this.ripple(x, y, { size: 1.5, strength: 1.3, life: 1.5 });
+    this.ripple(x, y, { size: 2.3, delay: .18, life: 1.8 });
+    this.ripple(x, y, { size: 3.1, delay: .4, life: 2.1, strength: .7 });
+    this.bubbleBurst(x, y, 14, .3);
   }
 
   resize(w, h) {
@@ -83,20 +131,110 @@ export class GoldfishScene {
   tap(x, y) {
     const m = this.margin;
     const dx = this.x - x, dy = this.y - y;
-    if (Math.hypot(dx, dy) <= this.length * .85) {
+    const distance = Math.hypot(dx, dy);
+    const swimming = this.mode === 'swim';
+
+    if (swimming && distance <= this.length * .9) {
+      // Caught! Splash and dive out of sight; it comes back somewhere else.
+      this.splash(this.x, this.y);
+      this.audio?.sound('splash');
+      this.food = null;
+      this.hideFor = rand(1.5, 2.5);
+      this.lastTap = { x, y };
+      this.setMode('diving');
+      return;
+    }
+
+    this.ripple(x, y, { size: .9 });
+    this.ripple(x, y, { size: 1.4, delay: .16, strength: .6 });
+    if (!swimming) {
+      this.audio?.sound('plip');
+      return;
+    }
+
+    if (distance <= this.length * 2.1) {
+      // Too close for comfort: dart away from the paw, leaving a wake.
       const angle = dx || dy ? Math.atan2(dy, dx) : this.heading;
-      const stride = this.length * 1.5;
+      const stride = this.length * 2.3;
       const destX = clamp(this.x + Math.cos(angle) * stride, m, this.w - m);
       const destY = clamp(this.y + Math.sin(angle) * stride, m, this.h - m);
-      if (Math.hypot(destX - this.x, destY - this.y) < this.length * .3) this.cruise();
+      if (Math.hypot(destX - this.x, destY - this.y) < this.length * .5) this.cruise();
       else this.setCourse(destX, destY);
-      this.dart = .9;
+      this.food = null;
+      this.dart = 1.3;
+      this.wakeTimer = 0;
+      this.audio?.sound('swish');
     } else {
-      this.setCourse(clamp(x, m, this.w - m), clamp(y, m, this.h - m));
+      // Something landed in the water: swim over and investigate.
+      this.audio?.sound('plip');
+      this.food = { x: clamp(x, m, this.w - m), y: clamp(y, m, this.h - m) };
+      this.setCourse(this.food.x, this.food.y);
+      this.dart = .5;
     }
   }
 
+  // Resurface far from where the paw last landed.
+  resurface() {
+    const m = this.margin, from = this.lastTap ?? { x: this.x, y: this.y };
+    let best = null, bestScore = -1;
+    for (let i = 0; i < 8; i++) {
+      const x = rand(m, this.w - m), y = rand(m, this.h - m);
+      const score = Math.hypot(x - from.x, y - from.y);
+      if (score > bestScore) { best = { x, y }; bestScore = score; }
+    }
+    this.x = best.x;
+    this.y = best.y;
+    this.heading = rand(0, TAU);
+    this.ripple(this.x, this.y, { size: 1.2, strength: 1.1 });
+    this.ripple(this.x, this.y, { size: 1.9, delay: .2, strength: .6 });
+    this.bubbleBurst(this.x, this.y, 8, .2);
+    this.audio?.sound('surface');
+    this.cruise();
+    this.setMode('surfacing');
+  }
+
+  updateEffects(dt) {
+    for (const r of this.ripples) r.age += dt;
+    this.ripples = this.ripples.filter((r) => r.age < r.life);
+    for (const b of this.bubbles) { b.age += dt; b.x += b.drift * dt; }
+    this.bubbles = this.bubbles.filter((b) => b.age < b.life);
+    for (const f of this.foam) f.age += dt;
+    this.foam = this.foam.filter((f) => f.age < f.life);
+    const gravity = this.length * 7;
+    for (const d of this.drops) {
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+      d.vz -= gravity * dt;
+      d.z += d.vz * dt;
+      if (d.z <= 0 && d.vz < 0) {
+        d.gone = true;
+        this.ripple(d.x, d.y, { size: .25, life: .6, strength: .8 });
+      }
+    }
+    this.drops = this.drops.filter((d) => !d.gone);
+  }
+
   update(dt) {
+    this.updateEffects(dt);
+    this.modeTime += dt;
+    if (this.mode === 'diving' && this.modeTime >= DIVE) this.setMode('hidden');
+    if (this.mode === 'hidden') {
+      if (this.modeTime >= this.hideFor) this.resurface();
+      return;
+    }
+    if (this.mode === 'surfacing' && this.modeTime >= SURFACE) this.setMode('swim');
+
+    // A fast dart leaves small wake rings behind the tail.
+    if (this.dart > .4) {
+      this.wakeTimer = (this.wakeTimer ?? 0) - dt;
+      if (this.wakeTimer <= 0) {
+        this.wakeTimer = .09;
+        const back = this.length * .45;
+        this.ripple(this.x - Math.cos(this.heading) * back, this.y - Math.sin(this.heading) * back,
+          { size: .45, life: .9, strength: .7 });
+      }
+    }
+
     this.dart = Math.max(0, this.dart - dt);
     this.beat += dt * (5.4 + 8 * this.dart);
     this.progress = Math.min(1, this.progress + dt * (1 + 3 * this.dart) / this.duration);
@@ -109,16 +247,47 @@ export class GoldfishScene {
     this.x = weights[0] * a.x + weights[1] * b.x + weights[2] * c.x + weights[3] * d.x;
     this.y = weights[0] * a.y + weights[1] * b.y + weights[2] * c.y + weights[3] * d.y;
     if (t === 1) {
+      if (this.food) {
+        const mouth = this.length * .3;
+        const nx = this.x + Math.cos(this.heading) * mouth, ny = this.y + Math.sin(this.heading) * mouth;
+        this.bubbleBurst(nx, ny, 6, .08);
+        this.ripple(nx, ny, { size: .5, life: .9 });
+        this.audio?.sound('nibble');
+        this.food = null;
+      } else {
+        this.audio?.cue();
+      }
       this.cruise();
-      this.audio?.cue();
     }
+  }
+
+  // How visible and how big the fish is while it dives or comes back up.
+  presence() {
+    if (this.mode === 'diving') {
+      const k = easeOut(Math.min(1, this.modeTime / DIVE));
+      return { alpha: 1 - k, size: 1 - .45 * k };
+    }
+    if (this.mode === 'surfacing') {
+      const k = easeOut(Math.min(1, this.modeTime / SURFACE));
+      return { alpha: k, size: .55 + .45 * k };
+    }
+    return { alpha: 1, size: 1 };
   }
 
   draw(ctx) {
     ctx.drawImage(this.water, 0, 0, this.w, this.h);
+    this.drawBubbles(ctx);
+    if (this.mode !== 'hidden') this.drawFish(ctx);
+    this.drawRipples(ctx);
+    this.drawSplash(ctx);
+  }
+
+  drawFish(ctx) {
+    const { alpha, size } = this.presence();
     ctx.save();
+    ctx.globalAlpha = alpha;
     ctx.translate(this.x, this.y);
-    const scale = this.length / 119;
+    const scale = this.length / 119 * size;
     ctx.scale(scale, scale);
     ctx.translate(3, 8);
     ctx.rotate(this.heading);
@@ -131,6 +300,7 @@ export class GoldfishScene {
     ctx.restore();
 
     ctx.save();
+    ctx.globalAlpha = alpha;
     ctx.translate(this.x, this.y);
     ctx.rotate(this.heading);
     ctx.scale(scale, scale);
@@ -138,6 +308,78 @@ export class GoldfishScene {
     const tip = 14 * Math.sin(this.beat - .7);
     this.drawTail(ctx, root, tip);
     this.drawBody(ctx, root);
+    ctx.restore();
+  }
+
+  // Bright, high-contrast rings so a tap reads clearly on a TV across the room.
+  drawRipples(ctx) {
+    ctx.save();
+    for (const r of this.ripples) {
+      if (r.age < 0) continue;
+      const k = r.age / r.life;
+      const radius = r.reach * easeOut(k);
+      const fade = (1 - k) ** 1.4 * r.strength;
+      const width = Math.max(1.5, this.length * .035 * (1 - k * .6));
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, radius, 0, TAU);
+      ctx.strokeStyle = `rgba(24,86,122,${.32 * fade})`;
+      ctx.lineWidth = width * 2.2;
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(255,255,255,${.85 * fade})`;
+      ctx.lineWidth = width;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  drawBubbles(ctx) {
+    ctx.save();
+    for (const b of this.bubbles) {
+      if (b.age < 0) continue;
+      const k = b.age / b.life;
+      const r = b.r * (.6 + .6 * k);
+      ctx.globalAlpha = Math.sin(Math.PI * k) * .9;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, r, 0, TAU);
+      ctx.fillStyle = 'rgba(230,248,255,.35)';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = Math.max(1, r * .22);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(b.x - r * .35, b.y - r * .35, r * .25, 0, TAU);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  drawSplash(ctx) {
+    ctx.save();
+    for (const f of this.foam) {
+      const k = f.age / f.life;
+      const r = this.length * (.35 + .5 * easeOut(k));
+      const foam = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+      foam.addColorStop(0, `rgba(255,255,255,${.9 * (1 - k)})`);
+      foam.addColorStop(.6, `rgba(235,250,255,${.55 * (1 - k)})`);
+      foam.addColorStop(1, 'rgba(235,250,255,0)');
+      ctx.fillStyle = foam;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, r, 0, TAU);
+      ctx.fill();
+    }
+    for (const d of this.drops) {
+      // Shadow on the water, then the droplet lifted toward the viewer by its height.
+      const lift = d.z * .35, grow = 1 + d.z / (this.length * 2);
+      ctx.fillStyle = 'rgba(24,86,122,.25)';
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.95)';
+      ctx.beginPath();
+      ctx.arc(d.x, d.y - lift, d.r * grow, 0, TAU);
+      ctx.fill();
+    }
     ctx.restore();
   }
 
