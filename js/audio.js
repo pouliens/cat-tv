@@ -6,6 +6,7 @@ const CUES = {
     const pitch = rand(380, 560);
     s.tone(pitch, pitch * 1.5, .17, .11);
   },
+  goldfish(s) { s.tone(345, 465, .21, .065); },
   logo(s) { s.tone(350, 275, .20, .085); },
   intro(s) {
     s.tone(220, 220, .42, .09);
